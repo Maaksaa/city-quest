@@ -1,9 +1,25 @@
 <script setup lang="ts">
-const apiKey = import.meta.env.VITE_MAPTILER_KEY
+import { onMounted, onUnmounted, ref } from 'vue'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+
+const container = ref<HTMLElement>()
+let map: maplibregl.Map | null = null
+
+onMounted(() => {
+  map = new maplibregl.Map({
+    container: container.value!,
+    style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`,
+    center: [19.8335, 45.2671],
+    zoom: 13,
+  })
+})
+
+onUnmounted(() => {
+  map?.remove()
+})
 </script>
 
 <template>
-  <p>{{ apiKey }}</p>
+  <div ref="container" style="width: 100vw; height: 100vh" />
 </template>
-
-<style scoped></style>
