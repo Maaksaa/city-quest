@@ -13,6 +13,16 @@ onMounted(() => {
     center: [19.8335, 45.2671],
     zoom: 13,
   })
+
+  // кнопка и определение гео
+  map.addControl(
+    new maplibregl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    }),
+  )
 })
 
 onUnmounted(() => {
