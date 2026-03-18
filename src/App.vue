@@ -21,6 +21,18 @@ const outerRing: [number, number][] = [
   [BOUNDS.west, BOUNDS.north],
   [BOUNDS.west, BOUNDS.south],
 ]
+// пока для простоты буду вырезать квадрат, потом поменяю на круги или гексы или сетку или ещё что-то
+function createHole(center: [number, number], sizeMeters: number): [number, number][] {
+  const offset = sizeMeters / 111320
+
+  return [
+    [center[0] - offset, center[1] - offset],
+    [center[0] + offset, center[1] - offset],
+    [center[0] + offset, center[1] + offset],
+    [center[0] - offset, center[1] + offset],
+    [center[0] - offset, center[1] - offset],
+  ]
+}
 
 onMounted(() => {
   map = new maplibregl.Map({
@@ -49,7 +61,7 @@ onMounted(() => {
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: [outerRing],
+          coordinates: [outerRing, createHole([19.8335, 45.2671], 50)],
         },
       },
     })
