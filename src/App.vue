@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 const container = ref<HTMLElement>()
 let map: maplibregl.Map | null = null
 
-const visitedPoints: [number, number][] = []
+const visitedPoints: [number, number][] = loadPoints()
 
 // координаты слоя над городом
 const BOUNDS = {
@@ -46,6 +46,22 @@ function getDistance(a: [number, number], b: [number, number]): number {
   const sin2 = Math.sin(dLng / 2)
   const h = sin1 * sin1 + Math.cos(toRad(a[1])) * Math.cos(toRad(b[1])) * sin2 * sin2
   return 2 * R * Math.asin(Math.sqrt(h))
+}
+
+const STORAGE_KEY = 'city-quest-visited'
+
+function savePoints() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(visitedPoints))
+}
+
+function loadPoints(): [number, number][] {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return []
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return []
+  }
 }
 
 onMounted(() => {
@@ -89,6 +105,19 @@ onMounted(() => {
         'fill-opacity': 0.6,
       },
     })
+
+    if (visitedPoints.length > 0) {
+      const source = map!.getSource('fog') as maplibregl.GeoJSONSource
+      source.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [outerRing, ...visitedPoints.map((p) => createHole(p, 50))],
+        },
+      })
+    }
+
     // смотрим гео и вырезаем область
     geolocate.on('geolocate', (e: GeolocationPosition) => {
       const point: [number, number] = [e.coords.longitude, e.coords.latitude]
@@ -97,6 +126,7 @@ onMounted(() => {
       if (tooClose) return
 
       visitedPoints.push(point)
+      savePoints()
 
       const source = map!.getSource('fog') as maplibregl.GeoJSONSource
       source.setData({
