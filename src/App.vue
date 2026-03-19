@@ -35,6 +35,18 @@ function createHole(center: [number, number], sizeMeters: number): [number, numb
     [center[0] - offset, center[1] - offset],
   ]
 }
+// стандартная формула Haversine для расчёта между двумя точками
+// на выходе получаем расстояние в метрах
+function getDistance(a: [number, number], b: [number, number]): number {
+  const R = 6371000
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const dLat = toRad(b[1] - a[1])
+  const dLng = toRad(b[0] - a[0])
+  const sin1 = Math.sin(dLat / 2)
+  const sin2 = Math.sin(dLng / 2)
+  const h = sin1 * sin1 + Math.cos(toRad(a[1])) * Math.cos(toRad(b[1])) * sin2 * sin2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
 
 onMounted(() => {
   map = new maplibregl.Map({
@@ -80,6 +92,10 @@ onMounted(() => {
     // смотрим гео и вырезаем область
     geolocate.on('geolocate', (e: GeolocationPosition) => {
       const point: [number, number] = [e.coords.longitude, e.coords.latitude]
+
+      const tooClose = visitedPoints.some((p) => getDistance(p, point) < 20)
+      if (tooClose) return
+
       visitedPoints.push(point)
 
       const source = map!.getSource('fog') as maplibregl.GeoJSONSource
