@@ -6,6 +6,8 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 const container = ref<HTMLElement>()
 let map: maplibregl.Map | null = null
 
+const visitedPoints: [number, number][] = []
+
 // координаты слоя над городом
 const BOUNDS = {
   west: 19.65,
@@ -43,14 +45,14 @@ onMounted(() => {
   })
 
   // кнопка и определение гео
-  map.addControl(
-    new maplibregl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true,
-      },
-      trackUserLocation: true,
-    }),
-  )
+  const geolocate = new maplibregl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true,
+    },
+    trackUserLocation: true,
+  })
+
+  map.addControl(geolocate)
 
   // доп слой поверх карты
   map.on('load', () => {
@@ -61,7 +63,7 @@ onMounted(() => {
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: [outerRing, createHole([19.8335, 45.2671], 50)],
+          coordinates: [outerRing],
         },
       },
     })
@@ -74,6 +76,21 @@ onMounted(() => {
         'fill-color': '#000000',
         'fill-opacity': 0.6,
       },
+    })
+    // смотрим гео и вырезаем область
+    geolocate.on('geolocate', (e: GeolocationPosition) => {
+      const point: [number, number] = [e.coords.longitude, e.coords.latitude]
+      visitedPoints.push(point)
+
+      const source = map!.getSource('fog') as maplibregl.GeoJSONSource
+      source.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [outerRing, ...visitedPoints.map((p) => createHole(p, 50))],
+        },
+      })
     })
   })
 })
