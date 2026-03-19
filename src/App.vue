@@ -1,12 +1,22 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 const container = ref<HTMLElement>()
 let map: maplibregl.Map | null = null
 
-const visitedPoints: [number, number][] = loadPoints()
+const visitedPoints = ref<[number, number][]>(loadPoints())
+
+const CITY_AREA = 4_000_000
+const HOLE_SIZE = 50
+const HOLE_AREA = (HOLE_SIZE * 2) ** 2
+
+const exploredPercent = computed(() => {
+  const explored = visitedPoints.value.length * HOLE_AREA
+  const percent = (explored / CITY_AREA) * 100
+  return Math.min(percent, 100).toFixed(1)
+})
 
 // координаты слоя над городом
 const BOUNDS = {
@@ -106,14 +116,14 @@ onMounted(() => {
       },
     })
 
-    if (visitedPoints.length > 0) {
+    if (visitedPoints.value.length > 0) {
       const source = map!.getSource('fog') as maplibregl.GeoJSONSource
       source.setData({
         type: 'Feature',
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: [outerRing, ...visitedPoints.map((p) => createHole(p, 50))],
+          coordinates: [outerRing, ...visitedPoints.value.map((p) => createHole(p, 50))],
         },
       })
     }
@@ -122,10 +132,10 @@ onMounted(() => {
     geolocate.on('geolocate', (e: GeolocationPosition) => {
       const point: [number, number] = [e.coords.longitude, e.coords.latitude]
 
-      const tooClose = visitedPoints.some((p) => getDistance(p, point) < 20)
+      const tooClose = visitedPoints.value.some((p) => getDistance(p, point) < 20)
       if (tooClose) return
 
-      visitedPoints.push(point)
+      visitedPoints.value.push(point)
       savePoints()
 
       const source = map!.getSource('fog') as maplibregl.GeoJSONSource
@@ -134,7 +144,7 @@ onMounted(() => {
         properties: {},
         geometry: {
           type: 'Polygon',
-          coordinates: [outerRing, ...visitedPoints.map((p) => createHole(p, 50))],
+          coordinates: [outerRing, ...visitedPoints.value.map((p) => createHole(p, 50))],
         },
       })
     })
@@ -147,5 +157,20 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <div class="stats">{{ exploredPercent }} explored</div>
   <div ref="container" style="width: 100vw; height: 100vh" />
 </template>
+
+<style scoped>
+.stats {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1;
+}
+</style>
