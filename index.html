@@ -1,10 +1,27 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="ru">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+
+    <!-- theme-color — цвет верхней панели браузера на Android (Chrome).
+         Дублирует значение из manifest, но работает и без установки PWA -->
+    <meta name="theme-color" content="#1a1a2e">
+
+    <!-- apple-mobile-web-app-capable — разрешает iOS открывать сайт
+         в полноэкранном режиме (аналог display: standalone для Safari) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- apple-mobile-web-app-status-bar-style — стиль статус-бара на iOS.
+         "black-translucent" делает его прозрачным поверх контента -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- apple-touch-icon — иконка для "Добавить на экран Домой" в Safari.
+         iOS НЕ читает manifest.icons, поэтому это обязательный тег -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180x180.png">
+
+    <title>CityQuest</title>
   </head>
   <body>
     <div id="app"></div>

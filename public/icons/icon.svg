@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1a1a2e"/>
+  <!-- Стекло лупы — круг -->
+  <circle cx="220" cy="220" r="110" fill="none" stroke="#e94560" stroke-width="32" stroke-linecap="round"/>
+  <!-- Ручка лупы — линия под 45° от края стекла -->
+  <line x1="298" y1="298" x2="410" y2="410" stroke="#e94560" stroke-width="32" stroke-linecap="round"/>
+</svg>
